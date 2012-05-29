@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+ORIG_DIR=$(pwd)
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+cd $DIR/../
+
+mkdir -p dist
+jison -o dist/parser.js src/grammar.jison
+coffee -j dist/texas-script-compiler.js -c src/compiler/core src/compiler/validate-js-identifier src/compiler/nodes
+cat dist/parser.js dist/texas-script-compiler.js > dist/texas-script.js
+
+cd $ORIG_DIR

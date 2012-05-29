@@ -1,0 +1,23 @@
+# Literals
+{} - Object literal
+{a = b. c = d. e <- f}
+
+{,} - Array literal
+{a, b, c, d}
+
+[] - Function literal
+{
+  greet name: = [console log: "Hello " ++ name ++ "!"]
+}
+[|a: b: c:| a + {b, c}]
+
+# Classes
+
+animal = {
+  sleep = [console log: "I am sleeping"]
+  eat food: = [console log: "I am eating " ++ food]
+}
+
+snake = animal clone: {
+  slither distance: rate: = [console log: "Slithering " ++ distance ++ " miles at " ++ rate ++ "mph."]
+}
