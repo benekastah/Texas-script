@@ -46,15 +46,16 @@ class nodes.Fixnum extends nodes.Number
   
 class nodes.Symbol extends SyntaxNode
   constructor: (value) ->
+    @input = value
     value = value.replace /\-/g, "_"
     @value = texas_script.compiler.validate_js_identifier value
     super
     
-  join: (symbols...) ->
+  concat: (symbols...) ->
     arr = for symbol in [this, symbols...]
       if symbol not instanceof nodes.Symbol
         @error "Can't join non-Symbol with Symbol"
-      symbol.value
+      symbol.input
     new nodes.Symbol (arr.join "_"), this.yy
   
 class nodes.Argument extends nodes.Symbol
@@ -69,9 +70,12 @@ class nodes.Argument extends nodes.Symbol
     else
       super()
   
+class nodes.JavascriptNamespace extends nodes.Symbol
+  constructor: (__, yy) -> super "--js-root", yy
+  
 class nodes.String extends SyntaxNode
   constructor: (@value) -> super
-  compile: -> "\"#{@value}\""
+  compile: -> "TEXAS.String.clone(\"#{@value}\")"
   
 class nodes.Regex extends SyntaxNode
   constructor: ([@pattern, @flags]) -> super
@@ -83,25 +87,6 @@ class nodes.Boolean extends SyntaxNode
   
 class nodes.Nil extends SyntaxNode
   constructor: (@value) -> super
-  
-class nodes.Message extends SyntaxNode
-  constructor: ([base_name, args]) ->
-    args ?= []
-    
-    if base_name not instanceof nodes.Symbol
-      @format_error()
-      
-    for item, index in args
-      if index >= 1 and item not instanceof nodes.Argument
-        @format_error()
-       
-    @args = args 
-    @value = base_name.join args...
-    super
-    
-  compile: -> @value.compile()
-  
-  format_error: -> @error "Message must consist of one Symbol and zero or more Arguments."
   
 class nodes.Slot extends SyntaxNode
   constructor: ([@message, @value]) ->
@@ -121,45 +106,40 @@ class nodes.Object extends SyntaxNode
   compile: ->
     c_slots = for slot in @slots then slot.compile true
     if c_slots.length
-      "{ #{c_slots.join ', '} }"
+      "TEXAS.Object.clone({ #{c_slots.join ', '} })"
     else
-      "{}"
+      "TEXAS.Object.clone()"
   
 class nodes.List extends SyntaxNode
   constructor: (@list_items) -> super
   compile: ->
     c_items = for item in @list_items then item.compile()
-    "[#{c_items.join ', '}]"
+    "TEXAS.List.clone(#{c_items.join ', '})"
+  
+class nodes.Message extends SyntaxNode
+  constructor: ([message_name, args]) ->
+    args ?= []
+    @args = args 
+    @value = message_name.concat args...
+    super
+
+  compile: -> @value.compile()
+
+  format_error: -> @error "Message must consist of one Symbol and zero or more Arguments."
   
 class nodes.MessageSend extends SyntaxNode
-  constructor: (message_components) ->
-    format_error nodes.Message::format_error
-    
-    index_of_first_argument
-    for item, index in message_components
-      if item instanceof nodes.Argument
-        index_of_first_arguments = index
-        break
-    
-    if index_of_first_argument is 2
-      [@base, base_name, others...] = message_components
+  constructor: ({@base, message_name, args, js}) ->
+    args ?= []
+    if js
+      @values = args
+      @message = new nodes.Message [message_name]
     else
-      [base_name, others...] = message_components
-      
-    if base_name not instanceof nodes.Symbol
-      format_error.call this
-    
-    args = []
-    @values = []
-    for item, index in others
-      if index % 2 is 0
-        if item not instanceof nodes.Argument
-          format_error.call this
-        args.push item
-      else
-        values.push item
-    
-    @message = new nodes.Message base_name, args
+      m_args = []
+      @values = []
+      for arg in args
+        m_args.push arg[0]
+        @values.push arg[1]
+      @message = new nodes.Message [message_name, m_args]
     super
     
   compile: ->
@@ -169,7 +149,7 @@ class nodes.MessageSend extends SyntaxNode
       base = ''
     
     values = for value in @values then value.compile()
-    "#{base}#{message.compile()}(#{values.join ', '})"
+    "#{base}#{@message.compile()}(#{values.join ', '})"
 
 class nodes.Function extends SyntaxNode
   constructor: (@statement_list) -> super

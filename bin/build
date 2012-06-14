@@ -10,7 +10,12 @@ cd $DIR/../
 
 mkdir -p dist
 jison -o dist/parser.js src/grammar.jison
-coffee -j dist/texas-script-compiler.js -c src/compiler/core src/compiler/validate-js-identifier src/compiler/nodes
+
+cd src/compiler
+coffee -j ../../dist/texas-script-compiler.js -c core validate-js-identifier nodes
+cd ../../
 cat dist/parser.js dist/texas-script-compiler.js > dist/texas-script.js
+cd src/runtime
+coffee -j ../../dist/texas-script-runtime.js -c core object list string
 
 cd $ORIG_DIR

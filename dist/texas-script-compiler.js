@@ -207,12 +207,13 @@
     Symbol.name = 'Symbol';
 
     function Symbol(value) {
+      this.input = value;
       value = value.replace(/\-/g, "_");
       this.value = texas_script.compiler.validate_js_identifier(value);
       Symbol.__super__.constructor.apply(this, arguments);
     }
 
-    Symbol.prototype.join = function() {
+    Symbol.prototype.concat = function() {
       var arr, symbol, symbols;
       symbols = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       arr = (function() {
@@ -224,7 +225,7 @@
           if (!(symbol instanceof nodes.Symbol)) {
             this.error("Can't join non-Symbol with Symbol");
           }
-          _results.push(symbol.value);
+          _results.push(symbol.input);
         }
         return _results;
       }).call(this);
@@ -260,6 +261,20 @@
 
   })(nodes.Symbol);
 
+  nodes.JavascriptNamespace = (function(_super) {
+
+    __extends(JavascriptNamespace, _super);
+
+    JavascriptNamespace.name = 'JavascriptNamespace';
+
+    function JavascriptNamespace(__, yy) {
+      JavascriptNamespace.__super__.constructor.call(this, "--js-root", yy);
+    }
+
+    return JavascriptNamespace;
+
+  })(nodes.Symbol);
+
   nodes.String = (function(_super) {
 
     __extends(String, _super);
@@ -272,7 +287,7 @@
     }
 
     String.prototype.compile = function() {
-      return "\"" + this.value + "\"";
+      return "TEXAS.String.clone(\"" + this.value + "\")";
     };
 
     return String;
@@ -333,44 +348,6 @@
 
   })(SyntaxNode);
 
-  nodes.Message = (function(_super) {
-
-    __extends(Message, _super);
-
-    Message.name = 'Message';
-
-    function Message(_arg) {
-      var args, base_name, index, item, _i, _len;
-      base_name = _arg[0], args = _arg[1];
-      if (args == null) {
-        args = [];
-      }
-      if (!(base_name instanceof nodes.Symbol)) {
-        this.format_error();
-      }
-      for (index = _i = 0, _len = args.length; _i < _len; index = ++_i) {
-        item = args[index];
-        if (index >= 1 && !(item instanceof nodes.Argument)) {
-          this.format_error();
-        }
-      }
-      this.args = args;
-      this.value = base_name.join.apply(base_name, args);
-      Message.__super__.constructor.apply(this, arguments);
-    }
-
-    Message.prototype.compile = function() {
-      return this.value.compile();
-    };
-
-    Message.prototype.format_error = function() {
-      return this.error("Message must consist of one Symbol and zero or more Arguments.");
-    };
-
-    return Message;
-
-  })(SyntaxNode);
-
   nodes.Slot = (function(_super) {
 
     __extends(Slot, _super);
@@ -424,9 +401,9 @@
         return _results;
       }).call(this);
       if (c_slots.length) {
-        return "{ " + (c_slots.join(', ')) + " }";
+        return "TEXAS.Object.clone({ " + (c_slots.join(', ')) + " })";
       } else {
-        return "{}";
+        return "TEXAS.Object.clone()";
       }
     };
 
@@ -457,10 +434,39 @@
         }
         return _results;
       }).call(this);
-      return "[" + (c_items.join(', ')) + "]";
+      return "TEXAS.List.clone(" + (c_items.join(', ')) + ")";
     };
 
     return List;
+
+  })(SyntaxNode);
+
+  nodes.Message = (function(_super) {
+
+    __extends(Message, _super);
+
+    Message.name = 'Message';
+
+    function Message(_arg) {
+      var args, message_name;
+      message_name = _arg[0], args = _arg[1];
+      if (args == null) {
+        args = [];
+      }
+      this.args = args;
+      this.value = message_name.concat.apply(message_name, args);
+      Message.__super__.constructor.apply(this, arguments);
+    }
+
+    Message.prototype.compile = function() {
+      return this.value.compile();
+    };
+
+    Message.prototype.format_error = function() {
+      return this.error("Message must consist of one Symbol and zero or more Arguments.");
+    };
+
+    return Message;
 
   })(SyntaxNode);
 
@@ -470,40 +476,25 @@
 
     MessageSend.name = 'MessageSend';
 
-    function MessageSend(message_components) {
-      var args, base_name, index, index_of_first_arguments, item, others, _i, _j, _len, _len1;
-      format_error(nodes.Message.prototype.format_error);
-      index_of_first_argument;
-
-      for (index = _i = 0, _len = message_components.length; _i < _len; index = ++_i) {
-        item = message_components[index];
-        if (item instanceof nodes.Argument) {
-          index_of_first_arguments = index;
-          break;
-        }
+    function MessageSend(_arg) {
+      var arg, args, js, m_args, message_name, _i, _len;
+      this.base = _arg.base, message_name = _arg.message_name, args = _arg.args, js = _arg.js;
+      if (args == null) {
+        args = [];
       }
-      if (index_of_first_argument === 2) {
-        this.base = message_components[0], base_name = message_components[1], others = 3 <= message_components.length ? __slice.call(message_components, 2) : [];
+      if (js) {
+        this.values = args;
+        this.message = new nodes.Message([message_name]);
       } else {
-        base_name = message_components[0], others = 2 <= message_components.length ? __slice.call(message_components, 1) : [];
-      }
-      if (!(base_name instanceof nodes.Symbol)) {
-        format_error.call(this);
-      }
-      args = [];
-      this.values = [];
-      for (index = _j = 0, _len1 = others.length; _j < _len1; index = ++_j) {
-        item = others[index];
-        if (index % 2 === 0) {
-          if (!(item instanceof nodes.Argument)) {
-            format_error.call(this);
-          }
-          args.push(item);
-        } else {
-          values.push(item);
+        m_args = [];
+        this.values = [];
+        for (_i = 0, _len = args.length; _i < _len; _i++) {
+          arg = args[_i];
+          m_args.push(arg[0]);
+          this.values.push(arg[1]);
         }
+        this.message = new nodes.Message([message_name, m_args]);
       }
-      this.message = new nodes.Message(base_name, args);
       MessageSend.__super__.constructor.apply(this, arguments);
     }
 
@@ -524,7 +515,7 @@
         }
         return _results;
       }).call(this);
-      return "" + base + (message.compile()) + "(" + (values.join(', ')) + ")";
+      return "" + base + (this.message.compile()) + "(" + (values.join(', ')) + ")";
     };
 
     return MessageSend;

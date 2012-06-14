@@ -1,0 +1,116 @@
+Conflict in grammar: multiple actions possible when lookahead token is JS_IDENTIFIER in state 58
+- reduce by rule: symbol -> js_symbol
+- shift token (then go to state 37)
+Conflict in grammar: multiple actions possible when lookahead token is UNARY_IDENTIFIER in state 58
+- reduce by rule: symbol -> js_symbol
+- shift token (then go to state 36)
+Conflict in grammar: multiple actions possible when lookahead token is IDENTIFIER in state 58
+- reduce by rule: symbol -> js_symbol
+- shift token (then go to state 35)
+Conflict in grammar: multiple actions possible when lookahead token is JS_IDENTIFIER in state 59
+- reduce by rule: symbol -> unary_symbol
+- shift token (then go to state 37)
+Conflict in grammar: multiple actions possible when lookahead token is UNARY_IDENTIFIER in state 59
+- reduce by rule: symbol -> unary_symbol
+- shift token (then go to state 36)
+Conflict in grammar: multiple actions possible when lookahead token is IDENTIFIER in state 59
+- reduce by rule: symbol -> unary_symbol
+- shift token (then go to state 35)
+
+States with conflicts:
+State 58
+  javascript_message_send -> ( js_symbol .expression_list ) #lookaheads= EOF IDENTIFIER UNARY_IDENTIFIER JS_IDENTIFIER STRING NUMBER NUMBER_BASE TRUE FALSE NIL REGEX { [ ( , } ] ) ARGUMENT_ID
+  javascript_message_send -> ( js_symbol .) #lookaheads= EOF IDENTIFIER UNARY_IDENTIFIER JS_IDENTIFIER STRING NUMBER NUMBER_BASE TRUE FALSE NIL REGEX { [ ( , } ] ) ARGUMENT_ID
+  symbol -> js_symbol . #lookaheads= JS_IDENTIFIER UNARY_IDENTIFIER IDENTIFIER
+  expression_list -> .expression
+  expression_list -> .expression_list , expression
+  expression_list -> .expression_list ,
+  expression -> .simple_expression
+  expression -> .message_send
+  simple_expression -> .string
+  simple_expression -> .number
+  simple_expression -> .boolean
+  simple_expression -> .nil
+  simple_expression -> .symbol
+  simple_expression -> .regex
+  simple_expression -> .object
+  simple_expression -> .list
+  simple_expression -> .lambda
+  message_send -> .javascript_message_send
+  message_send -> .unary_message_send
+  message_send -> .texas_message_send
+  string -> .STRING
+  number -> .NUMBER
+  number -> .NUMBER_BASE
+  boolean -> .TRUE
+  boolean -> .FALSE
+  nil -> .NIL
+  symbol -> .texas_symbol
+  symbol -> .unary_symbol
+  symbol -> .js_symbol
+  regex -> .REGEX FLAGS
+  object -> .{ }
+  object -> .{ slot_set_list }
+  list -> .{ , }
+  list -> .{ expression_list }
+  lambda -> .[ ]
+  lambda -> .[ statement_list ]
+  javascript_message_send -> .( symbol js_symbol expression_list )
+  javascript_message_send -> .( js_symbol expression_list )
+  javascript_message_send -> .( symbol js_symbol )
+  javascript_message_send -> .( js_symbol )
+  unary_message_send -> .( symbol unary_symbol expression )
+  unary_message_send -> .( unary_symbol expression )
+  texas_message_send -> .( symbol texas_symbol message_param_list )
+  texas_message_send -> .( texas_symbol message_param_list )
+  texas_message_send -> .( symbol texas_symbol )
+  texas_message_send -> .( texas_symbol )
+  texas_symbol -> .IDENTIFIER
+  unary_symbol -> .UNARY_IDENTIFIER
+  js_symbol -> .JS_IDENTIFIER
+State 59
+  unary_message_send -> ( unary_symbol .expression ) #lookaheads= EOF IDENTIFIER UNARY_IDENTIFIER JS_IDENTIFIER STRING NUMBER NUMBER_BASE TRUE FALSE NIL REGEX { [ ( , } ] ) ARGUMENT_ID
+  symbol -> unary_symbol . #lookaheads= JS_IDENTIFIER UNARY_IDENTIFIER IDENTIFIER
+  expression -> .simple_expression
+  expression -> .message_send
+  simple_expression -> .string
+  simple_expression -> .number
+  simple_expression -> .boolean
+  simple_expression -> .nil
+  simple_expression -> .symbol
+  simple_expression -> .regex
+  simple_expression -> .object
+  simple_expression -> .list
+  simple_expression -> .lambda
+  message_send -> .javascript_message_send
+  message_send -> .unary_message_send
+  message_send -> .texas_message_send
+  string -> .STRING
+  number -> .NUMBER
+  number -> .NUMBER_BASE
+  boolean -> .TRUE
+  boolean -> .FALSE
+  nil -> .NIL
+  symbol -> .texas_symbol
+  symbol -> .unary_symbol
+  symbol -> .js_symbol
+  regex -> .REGEX FLAGS
+  object -> .{ }
+  object -> .{ slot_set_list }
+  list -> .{ , }
+  list -> .{ expression_list }
+  lambda -> .[ ]
+  lambda -> .[ statement_list ]
+  javascript_message_send -> .( symbol js_symbol expression_list )
+  javascript_message_send -> .( js_symbol expression_list )
+  javascript_message_send -> .( symbol js_symbol )
+  javascript_message_send -> .( js_symbol )
+  unary_message_send -> .( symbol unary_symbol expression )
+  unary_message_send -> .( unary_symbol expression )
+  texas_message_send -> .( symbol texas_symbol message_param_list )
+  texas_message_send -> .( texas_symbol message_param_list )
+  texas_message_send -> .( symbol texas_symbol )
+  texas_message_send -> .( texas_symbol )
+  texas_symbol -> .IDENTIFIER
+  unary_symbol -> .UNARY_IDENTIFIER
+  js_symbol -> .JS_IDENTIFIER
